@@ -1,12 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    >
-<TextView  
-    android:layout_width="fill_parent" 
-    android:layout_height="wrap_content" 
-    android:text="@string/hello"
-    />
+android:layout_width="fill_parent"
+android:layout_height="fill_parent"
+android:orientation="vertical">
+
+<TextView android:text="GPS Logging Controls" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+
+<LinearLayout android:layout_width="fill_parent"
+android:orientation="horizontal"
+android:layout_height="wrap_content">
+ <Button android:text="Start Logging" android:id="@+id/button_start" android:layout_width="wrap_content" android:layout_height="wrap_content"></Button>
+<Button android:text="Stop Logging" android:id="@+id/button_stop" android:layout_width="wrap_content" android:layout_height="wrap_content"></Button>
+</LinearLayout>
+
+<Button android:text="Star Waypoint" android:id="@+id/button_favorite" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+
 </LinearLayout>
