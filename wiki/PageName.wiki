@@ -1,0 +1,13 @@
+#summary Widgets
+#labels Phase-Design
+
+= Widgets =
+
+== Favorite Waypoint Widget ==
+
+The idea behind the Favorite Waypoint widget is to allow a person to easily and quickly tag a spot to remember later. The widget will be represented as a five-pointed star. Tapping the star will grab the current location information and save it.
+
+
+== Track Recording Widget ==
+
+The Track Recording widget will start and stop the periodic recording of location information. Once started, a track will continue being recorded until stopped. The period of recording is configurable in the application's main preferences screen.
