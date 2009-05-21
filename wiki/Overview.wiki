@@ -1,0 +1,16 @@
+#summary Feature overview of lTrax software.
+
+= Introduction =
+
+To come: a general overview of lTrax and why we felt it was necessary.
+
+
+= Features =
+
+  * GPS Tracking without SIM card or data connection
+  * Flat-file export of GPS Tracks
+  * Simple Widget to start/stop tracking
+
+
+= See also = 
+  * My Tracks: http://mytracks.appspot.com/
