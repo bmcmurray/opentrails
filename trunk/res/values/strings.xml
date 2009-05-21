@@ -2,5 +2,7 @@
 <resources>
     <string name="app_name">lTrax</string>
     <string name="favorite_result">Location has been favorited!</string>
-<string name="waypoint_widget">Save This Spot</string>
+    <string name="error_no_fix">Waiting for GPS fix...</string>
+    <string name="error_no_providers">No location providers</string>
+    <string name="waypoint_widget">Save This Spot</string>
 </resources>
