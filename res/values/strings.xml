@@ -2,4 +2,5 @@
 <resources>
     <string name="app_name">lTrax</string>
     <string name="favorite_result">Location has been favorited!</string>
+<string name="waypoint_widget">Save This Spot</string>
 </resources>
