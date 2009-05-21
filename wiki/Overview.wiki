@@ -10,6 +10,7 @@ To come: a general overview of lTrax and why we felt it was necessary.
   * GPS Tracking without SIM card or data connection
   * Flat-file export of GPS Tracks
   * Simple Widget to start/stop tracking
+  * Simple Widget to record waypoint with one tap
 
 
 = See also = 
