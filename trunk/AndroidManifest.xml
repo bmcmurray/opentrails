@@ -20,8 +20,16 @@
 				    <meta-data android:name="android.appwidget.provider"
 	                android:resource="@xml/waypoint_widget_info" 
 	          />
-				            
-        
+        </receiver>
+        <receiver android:name=".TrackWidget"
+                  android:label="@string/track_widget"
+                  android:icon="@drawable/track_widget_icon" >
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data android:name="android.appwidget.provider"
+                  android:resource="@xml/track_widget_info" 
+            />
         </receiver>
     <service android:name="TrackerService"></service>
 </application>
