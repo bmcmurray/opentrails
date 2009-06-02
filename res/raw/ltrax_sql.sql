@@ -2,7 +2,7 @@ CREATE TABLE 'Track'
 (
 'id' INTEGER PRIMARY KEY,
 'title' VARCHAR(255),
-'created' TIMESTAMP DEFAULT '(DATETIME(\'now\'))' NOT NULL,
+'created' TIMESTAMP DEFAULT (DATETIME('now')) NOT NULL,
 'modified' TIMESTAMP
 );
 
@@ -14,7 +14,7 @@ CREATE TABLE 'TrackPoint'
 'tid' INTEGER NOT NULL,
 'lon' FLOAT NOT NULL,
 'lat' FLOAT NOT NULL,
-'timestamp' TIMESTAMP DEFAULT '(DATETIME(\'now\'))' NOT NULL
+'timestamp' TIMESTAMP DEFAULT (DATETIME('now')) NOT NULL
 );
 
 
@@ -25,7 +25,7 @@ CREATE TABLE 'Point'
 'title' VARCHAR(255),
 'lon' FLOAT NOT NULL,
 'lat' FLOAT NOT NULL,
-'timestamp' TIMESTAMP DEFAULT '(DATETIME(\'now\'))' NOT NULL
+'timestamp' TIMESTAMP DEFAULT (DATETIME('now')) NOT NULL
 );
 
 
