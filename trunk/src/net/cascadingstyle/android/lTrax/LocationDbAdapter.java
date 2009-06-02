@@ -6,6 +6,7 @@ package net.cascadingstyle.android.lTrax;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Date;
 
 
 
@@ -15,8 +16,8 @@ import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.location.Location;
 import android.util.Log;
-import android.content.res.Resources;
 
 /**
  * @author bmcmurray
@@ -29,10 +30,6 @@ import android.content.res.Resources;
  * 
  */
 public class LocationDbAdapter {
-	
-	public static final String KEY_TITLE = "title";
-    public static final String KEY_BODY = "body";
-    public static final String KEY_ROWID = "_id";
 
     private static final String TAG = "LTraxLocationDbAdapter";
     private DatabaseHelper mDbHelper;
@@ -41,10 +38,9 @@ public class LocationDbAdapter {
     /**
      * Database creation sql statement
      */
-    private static Resources r;
-    private static InputStream is = r.openRawResource(R.raw.ltrax_sql);
+    private InputStream is;
     
-    private static String loadSqlFile(InputStream is) {
+    private String loadSqlFile(InputStream is) {
     	StringBuilder sqlString = new StringBuilder();
     	
     	try {
@@ -59,14 +55,28 @@ public class LocationDbAdapter {
     	}
     }
     
-    private static final String DATABASE_CREATE = loadSqlFile(is);
+    private static String DATABASE_CREATE;
 
     private static final String DATABASE_NAME = "ltrax_data";
-    private static final String DATABASE_TABLE = "notes";
     private static final int DATABASE_VERSION = 1;
 
     private final Context mCtx;
 
+    /**
+     * Constructor - takes the context to allow the database to be
+     * opened/created
+     * 
+     * @param ctx the Context within which to work
+     */
+    public LocationDbAdapter(Context ctx) {
+        this.mCtx = ctx;
+        if (DATABASE_CREATE == null){
+	        this.is = this.mCtx.getResources().openRawResource(R.raw.ltrax_sql);
+	        DATABASE_CREATE = this.loadSqlFile(is);
+        }
+        
+    }
+    
     private static class DatabaseHelper extends SQLiteOpenHelper {
 
         DatabaseHelper(Context context) {
@@ -75,7 +85,6 @@ public class LocationDbAdapter {
 
         @Override
         public void onCreate(SQLiteDatabase db) {
-
             db.execSQL(DATABASE_CREATE);
         }
 
@@ -88,18 +97,10 @@ public class LocationDbAdapter {
         }
     }
 
-    /**
-     * Constructor - takes the context to allow the database to be
-     * opened/created
-     * 
-     * @param ctx the Context within which to work
-     */
-    public LocationDbAdapter(Context ctx) {
-        this.mCtx = ctx;
-    }
+
 
     /**
-     * Open the notes database. If it cannot be opened, try to create a new
+     * Open the database. If it cannot be opened, try to create a new
      * instance of the database. If it cannot be created, throw an exception to
      * signal the failure
      * 
@@ -117,82 +118,260 @@ public class LocationDbAdapter {
         mDbHelper.close();
     }
 
-
+    
+    
     /**
-     * Create a new note using the title and body provided. If the note is
-     * successfully created return the new rowId for that note, otherwise return
+     * Create a new trackpoint for a given Track. If the point is
+     * successfully created return the new rowId for that point, otherwise return
      * a -1 to indicate failure.
      * 
-     * @param title the title of the note
-     * @param body the body of the note
+     * @param trackId the ID of the track
+     * @param location the current location 
      * @return rowId or -1 if failed
      */
-    public long createNote(String title, String body) {
-        ContentValues initialValues = new ContentValues();
-        initialValues.put(KEY_TITLE, title);
-        initialValues.put(KEY_BODY, body);
-
-        return mDb.insert(DATABASE_TABLE, null, initialValues);
+    public long createTrackPoint(long trackId, Location location) {
+        ContentValues pointValues = new ContentValues();
+        pointValues.put("tid", trackId);
+        pointValues.put("lon", location.getLongitude());
+        pointValues.put("lat", location.getLatitude());
+        pointValues.put("timestamp", location.getTime());
+        
+        return mDb.insert(
+        		"TrackPoint", 
+        		null, 
+        		pointValues);
     }
 
     /**
-     * Delete the note with the given rowId
+     * Create a new track using an initial Location and title. If the track is
+     * successfully created return the new rowId for that track, otherwise return
+     * a -1 to indicate failure.
      * 
-     * @param rowId id of note to delete
+     * @param location the initial Location object to start the track
+     * @param title the title of the new track 
+     * @return rowId or -1 if failed
+     */
+    public long createTrack(Location location, String title) {
+    	// Make a new Track first
+    	ContentValues initialValues = new ContentValues();
+        initialValues.put("title", title);
+        initialValues.put("created", location.getTime());
+        initialValues.put("modified", location.getTime());
+        
+        long track = mDb.insert(
+        		"Track", 
+        		null, 
+        		initialValues);
+        
+        if (track != -1)
+        {
+	        // Now make the initial TrackPoint	        
+	        return createTrackPoint(track, location);
+        }
+        else
+        {
+        	return track;
+        }    	
+    }
+    
+    /**
+     * Create a new track using an initial Location. Without the title, we generate
+     * a title for the user based off the timestamp of the Location. If the track is
+     * successfully created return the new rowId for that track, otherwise return
+     * a -1 to indicate failure.
+     * 
+     * @param location the initial Location object to start the track
+     * @return rowId or -1 if failed
+     */
+    public long createTrack(Location location) {
+    	String title = "";
+    	long create_time = location.getTime();
+    	// convert the UTC timestamp into readable datetime
+    	
+    	title = Long.toString(create_time);
+    	
+    	return createTrack(location, title);
+    }
+    
+    /**
+     * Create a new waypoint using an initial Location and title. If the waypoint is
+     * successfully created return the new rowId for that point, otherwise return
+     * a -1 to indicate failure.
+     * 
+     * @param location the Location of the waypoint
+     * @param title the title of the new track 
+     * @return rowId or -1 if failed
+     */
+    public long createWaypoint(Location location, String title) {
+    	ContentValues initialValues = new ContentValues();
+    	initialValues.put("title", title);
+    	initialValues.put("lon", location.getLongitude());
+    	initialValues.put("lat", location.getLatitude());
+    	initialValues.put("timestamp", location.getTime());
+    	
+    	return mDb.insert(
+    			"Point", 
+    			null, 
+    			initialValues);
+    }
+    
+    /**
+     * Create a new waypoint using an initial Location. Without the title, we generate
+     * a title for the user based off the timestamp of the Location. If the waypoint is
+     * successfully created return the new rowId for that track, otherwise return
+     * a -1 to indicate failure.
+     * 
+     * @param location the Location of the waypoint
+     * @return rowId or -1 if failed
+     */
+    public long createWaypoint(Location location) {
+    	String title = "";
+    	long create_time = location.getTime();
+    	// convert the UTC timestamp into readable datetime
+    	
+    	title = Long.toString(create_time);
+    	return createWaypoint(location, title);
+    }
+    
+    /**
+     * Delete the Track with the given trackId
+     * 
+     * @param trackId id of Track to delete
      * @return true if deleted, false otherwise
      */
-    public boolean deleteNote(long rowId) {
-
-        return mDb.delete(DATABASE_TABLE, KEY_ROWID + "=" + rowId, null) > 0;
+    public boolean deleteTrack(long trackId) {
+    	// First, delete all of the TrackPoints
+    	mDb.delete(
+    			"TrackPoint", 
+    			"tid=?", new String[] {Long.toString(trackId)});
+    	// Now, delete the Track
+    	return mDb.delete(
+    			"Track", 
+    			"id=?", new String[] {Long.toString(trackId)}) > 0;
     }
-
+    
     /**
-     * Return a Cursor over the list of all notes in the database
+     * Delete the Waypoint with the given pointId
      * 
-     * @return Cursor over all notes
+     * @param pointId id of note to delete
+     * @return true if deleted, false otherwise
      */
-    public Cursor fetchAllNotes() {
-
-        return mDb.query(DATABASE_TABLE, new String[] {KEY_ROWID, KEY_TITLE,
-                KEY_BODY}, null, null, null, null, null);
+    public boolean deleteWaypoint(long pointId) {
+    	return mDb.delete(
+    			"Point", 
+    			"id=?", new String[] {Long.toString(pointId)}) > 0;
     }
-
+    
     /**
-     * Return a Cursor positioned at the note that matches the given rowId
+     * Return a Cursor over the list of all Tracks in the database
      * 
-     * @param rowId id of note to retrieve
-     * @return Cursor positioned to matching note, if found
-     * @throws SQLException if note could not be found/retrieved
+     * @return Cursor over all tracks
      */
-    public Cursor fetchNote(long rowId) throws SQLException {
-
-        Cursor mCursor =
-
-                mDb.query(true, DATABASE_TABLE, new String[] {KEY_ROWID,
-                        KEY_TITLE, KEY_BODY}, KEY_ROWID + "=" + rowId, null,
-                        null, null, null, null);
-        if (mCursor != null) {
+    public Cursor getAllTracks() {
+    	return mDb.query(
+    			"Track", 
+    			new String[] {"id", "title", "created", "modified"}, 
+    			null, null, null, null, null);
+    }
+    
+    public Cursor getTrack(long trackId) {
+    	return mDb.query(
+    			true,
+    			"Track", 
+    			new String[] {"id", "title", "created", "modified"}, 
+    			"id=?", new String[] {Long.toString(trackId)}, 
+    			null, null, null, null);
+    	
+    }
+    
+    /**
+     * Return a Cursor over the list of all waypoints in the database
+     * 
+     * @return Cursor over all waypoints
+     */
+    public Cursor getAllWaypoints() {
+    	return mDb.query(
+    			"Point", 
+    			new String[] {"id", "title", "lon", "lat", "timestamp"}, 
+    			null, null, null, null, null);
+    }
+    
+    public Cursor getWaypoint(long pointId) {
+    	Cursor mCursor = mDb.query(
+    			true,
+    			"Point", 
+    			new String[] {"id", "title", "lon", "lat", "timestamp"}, 
+    			"id=?", 
+    			new String[] {Long.toString(pointId)}, 
+    			null, null, null, null);
+    	
+    	if (mCursor != null) {
             mCursor.moveToFirst();
         }
         return mCursor;
-
     }
-
+    
+    
     /**
-     * Update the note using the details provided. The note to be updated is
-     * specified using the rowId, and it is altered to use the title and body
-     * values passed in
+     * Update the track using the details provided. The track to be updated is
+     * specified using the trackId; a new title will update the current title.
      * 
-     * @param rowId id of note to update
-     * @param title value to set note title to
-     * @param body value to set note body to
+     * @param trackId id of track to update
+     * @param title value to set track's title to
      * @return true if the note was successfully updated, false otherwise
      */
-    public boolean updateNote(long rowId, String title, String body) {
-        ContentValues args = new ContentValues();
-        args.put(KEY_TITLE, title);
-        args.put(KEY_BODY, body);
-
-        return mDb.update(DATABASE_TABLE, args, KEY_ROWID + "=" + rowId, null) > 0;
-    }	
+    public boolean updateTrack(long trackId, String title) {
+    	// update the Track's title
+    	ContentValues values = new ContentValues();
+    	values.put("title", title);
+        //values.put("modified", new Date().getTime());
+        
+    	return mDb.update(
+    			"Track", 
+    			values, 
+    			"id=?", new String[] {Long.toString(trackId)}) > 0;
+    }
+    
+    /**
+     * Update the track using the details provided. The track to be updated is
+     * specified using the trackId; a new location will cause for a new TrackPoint to
+     * be created.
+     * 
+     * @param trackId id of track to update
+     * @param title value to set track's title to
+     * @param location a new location to be associated to this track
+     * @return true if the note was successfully updated, false otherwise
+     */
+    public boolean updateTrack(long trackId, Location location) {
+    	// update the Track's modified time
+    	ContentValues values = new ContentValues();
+        values.put("modified", new Date().getTime());
+    	
+    	mDb.update(
+    			"Track", 
+    			values, 
+    			"id=?", new String[] {Long.toString(trackId)});
+    	
+    	// make a new TrackPoint
+    	return createTrackPoint(trackId, location) > 0;
+    }
+    
+    /**
+     * Update the Waypoint using the details provided. The point to be updated is
+     * specified using the pointId, and it is altered to use the title provided.
+     * 
+     * @param pointId id of note to update
+     * @param title value to set Waypoint's title to
+     * @return true if the note was successfully updated, false otherwise
+     */
+    public boolean updateWaypoint(long pointId, String title) {
+    	// update the Waypoint's title
+    	ContentValues values = new ContentValues();
+    	values.put("title", title);
+        
+    	return mDb.update(
+    			"Point", 
+    			values, 
+    			"id=?", new String[] {Long.toString(pointId)}) > 0;
+    }
 }
