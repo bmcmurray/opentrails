@@ -85,7 +85,6 @@ public class LocationDbAdapter {
 
         @Override
         public void onCreate(SQLiteDatabase db) {
-        	Log.v(TAG, "hello");
             db.execSQL(DATABASE_CREATE);
         }
 
