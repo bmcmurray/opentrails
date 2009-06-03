@@ -14,6 +14,7 @@ import android.widget.Button;
 public class L_Trax extends Activity implements ServiceConnection {
 	private static final String TAG = "LTraxMain";
 	private LocationDbAdapter mDbHelper;
+	private IBinder trackerService;
 	
     /** Called when the activity is first created. */
     @Override
@@ -25,6 +26,7 @@ public class L_Trax extends Activity implements ServiceConnection {
         initButtons();
         
         bindService(new Intent(this, TrackerService.class), this, BIND_AUTO_CREATE);
+        
     }
     
     private void initButtons(){
@@ -34,6 +36,14 @@ public class L_Trax extends Activity implements ServiceConnection {
 				favorite();
 			}
 		});
+		
+		((Button)findViewById(R.id.button_start)).
+			setOnClickListener(new OnClickListener(){
+			public void onClick(View v) {
+				
+			}
+		});
+		
     }
     
     public void favorite(){
@@ -41,7 +51,7 @@ public class L_Trax extends Activity implements ServiceConnection {
     }
 
 	public void onServiceConnected(ComponentName name, IBinder service) {
-		// TODO Auto-generated method stub
+		trackerService = service;
 		
 	}
 
