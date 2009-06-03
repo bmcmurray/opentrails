@@ -8,8 +8,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Date;
 
-
-
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
