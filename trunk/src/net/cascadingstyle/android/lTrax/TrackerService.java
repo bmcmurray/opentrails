@@ -12,6 +12,7 @@ import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationManager;
 import android.location.LocationProvider;
+import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
@@ -28,6 +29,14 @@ public class TrackerService extends Service {
 	private NotificationManager nm;
 	private static final int TRACKING_NOTIFICATION = 0x00;
 
+	private final IBinder mBinder = new LocalBinder();
+	
+	public class LocalBinder extends Binder {
+		TrackerService getService(){
+			return TrackerService.this;
+		}
+	}
+	
 	private final class ServiceHandler extends Handler {
 		@Override
 		public void handleMessage(Message msg) {
@@ -42,15 +51,12 @@ public class TrackerService extends Service {
                     }
                 }
             }
-            
-            
 		}
 	}
+	
 	@Override
 	public IBinder onBind(Intent arg0) {
-		// TODO Auto-generated method stub
-		
-		return null;
+		return mBinder;
 	}
 	
 	
@@ -61,6 +67,7 @@ public class TrackerService extends Service {
 		
 		nm = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
     	lm = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
+    	
     	List<String> providers = lm.getAllProviders();
 		Toast.makeText(getApplicationContext(), 
 				providers.toString(), 
