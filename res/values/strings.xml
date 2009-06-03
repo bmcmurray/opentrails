@@ -5,5 +5,7 @@
     <string name="error_no_fix">Waiting for GPS fix...</string>
     <string name="error_no_providers">No location providers</string>
     <string name="waypoint_widget">Save This Spot</string>
-<string name="track_widget">Record a Trail</string>
+	<string name="track_widget">Record a Trail</string>
+	<string name="tracking_started">Started recording track</string>
+	<string name="service_label">lTrax</string>
 </resources>
