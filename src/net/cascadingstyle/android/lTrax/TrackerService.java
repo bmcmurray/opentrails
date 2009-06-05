@@ -10,9 +10,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.location.Criteria;
 import android.location.Location;
+import android.location.LocationListener;
 import android.location.LocationManager;
 import android.location.LocationProvider;
 import android.os.Binder;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
@@ -24,9 +26,9 @@ import android.widget.Toast;
  * @author steve
  *
  */
-public class TrackerService extends Service {
+public class TrackerService extends Service implements LocationListener {
 	private LocationManager lm;
-	private LocationDbAdapter db;
+	public LocationDbAdapter db;
 	
 	private NotificationManager nm;
 	private static final int TRACKING_NOTIFICATION = 0x00;
@@ -38,7 +40,7 @@ public class TrackerService extends Service {
 	public void onCreate() {
 		super.onCreate();
 		
-		db = new LocationDbAdapter(getApplication().getApplicationContext());
+		db = new LocationDbAdapter(getApplicationContext());
 		nm = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
     	lm = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
     	
@@ -63,6 +65,21 @@ public class TrackerService extends Service {
 	}
 	
 	/********************** public methods ***********************/
+	
+	public void startRecording(){
+		lm.requestLocationUpdates("gps", 60000, 1, this);
+		
+	}
+	
+	public void stopRecording(){
+		lm.removeUpdates(this);
+	}
+	
+	public void showRecorded(){
+		Toast.makeText(getApplicationContext(), 
+				"DB has "+db.getAllWaypoints().getCount()+" waypoints stored.", 
+				Toast.LENGTH_LONG).show();
+	}
 	
 	public void saveWaypoint(){
 		String providerString = lm.getBestProvider(new Criteria(), true);
@@ -128,5 +145,35 @@ public class TrackerService extends Service {
                 }
             }
 		}
+	}
+
+	public void onLocationChanged(Location loc) {
+		if (db.createWaypoint(loc) > -1){
+			setNotificationStatus("Now have "+db.getAllWaypoints().getCount() + " waypoints.");
+			Toast.makeText(getApplicationContext(), 
+					getString(R.string.favorite_result) + ": " + loc.getLatitude() + ", "+loc.getLongitude(), 
+					Toast.LENGTH_SHORT).show();
+
+		}
+		/*
+		Toast.makeText(getApplicationContext(), 
+				getString(R.string.favorite_result) + ": " + loc.toString(), 
+				Toast.LENGTH_SHORT).show();
+		*/
+	}
+
+	public void onProviderDisabled(String provider) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void onProviderEnabled(String provider) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void onStatusChanged(String provider, int status, Bundle extras) {
+		// TODO Auto-generated method stub
+		
 	}
 }
