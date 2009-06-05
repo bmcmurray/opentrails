@@ -33,16 +33,36 @@ public class LocationDbAdapter {
     private DatabaseHelper mDbHelper;
     private SQLiteDatabase mDb;
     
+    private static String DATABASE_CREATE;
+
+    private static final String DATABASE_NAME = "ltrax_data";
+    private static final int DATABASE_VERSION = 1;
+
+    private final Context mCtx;
+
+    /**
+     * Constructor - takes the context to allow the database to be
+     * opened/created.
+     * 
+     * @param ctx the Context within which to work
+     */
+    public LocationDbAdapter(Context ctx) {
+        this.mCtx = ctx;
+        if (DATABASE_CREATE == null){
+	        DATABASE_CREATE = this.loadSqlFile(this.mCtx.getResources().
+	        		openRawResource(R.raw.ltrax_sql));
+        }
+    }
+    
     /**
      * Database creation sql statement
      */
-    private InputStream is;
-    
     private String loadSqlFile(InputStream is) {
     	StringBuilder sqlString = new StringBuilder();
     	
     	try {
-    		for (BufferedReader sqlReader = new BufferedReader(new InputStreamReader(is), 16000); sqlReader.ready();) {
+    		for (BufferedReader sqlReader = new BufferedReader(new InputStreamReader(is), 16000);
+    				sqlReader.ready();) {
     			sqlString.append(sqlReader.readLine());
     		}
     		
@@ -53,28 +73,7 @@ public class LocationDbAdapter {
     	}
     }
     
-    private static String DATABASE_CREATE;
 
-    private static final String DATABASE_NAME = "ltrax_data";
-    private static final int DATABASE_VERSION = 1;
-
-    private final Context mCtx;
-
-    /**
-     * Constructor - takes the context to allow the database to be
-     * opened/created
-     * 
-     * @param ctx the Context within which to work
-     */
-    public LocationDbAdapter(Context ctx) {
-        this.mCtx = ctx;
-        if (DATABASE_CREATE == null){
-	        this.is = this.mCtx.getResources().openRawResource(R.raw.ltrax_sql);
-	        DATABASE_CREATE = this.loadSqlFile(is);
-        }
-        
-    }
-    
     private static class DatabaseHelper extends SQLiteOpenHelper {
 
         DatabaseHelper(Context context) {

@@ -31,7 +31,7 @@
                   android:resource="@xml/track_widget_info" 
             />
         </receiver>
-    <service android:name="TrackerService"></service>
+    <service android:name="TrackerService"/>
 </application>
     
     <uses-sdk android:minSdkVersion="3" />
