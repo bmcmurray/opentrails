@@ -95,7 +95,6 @@ public class LocationDbAdapter {
     }
 
 
-
     /**
      * Open the database. If it cannot be opened, try to create a new
      * instance of the database. If it cannot be created, throw an exception to

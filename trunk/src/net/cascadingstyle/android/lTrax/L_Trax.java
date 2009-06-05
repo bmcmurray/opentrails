@@ -4,11 +4,13 @@ import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.TextView;
 
 public class L_Trax extends Activity implements ServiceConnection {
 	private static final String TAG = "LTraxMain";
@@ -41,15 +43,33 @@ public class L_Trax extends Activity implements ServiceConnection {
 			setOnClickListener(new OnClickListener(){
 			public void onClick(View v) {
 				bindService();
+				
 			}
 		});
 		
 		((Button)findViewById(R.id.button_stop)).
 		setOnClickListener(new OnClickListener(){
-		public void onClick(View v) {
-			unbindService();
-		}
-	});
+			public void onClick(View v) {
+				unbindService();
+				
+			}
+		});
+	
+		((Button)findViewById(R.id.button_showDb)).
+		setOnClickListener(new OnClickListener(){
+			public void onClick(View v) {
+				Cursor c = trackerService.db.getAllWaypoints();
+				TextView tv = (TextView)findViewById(R.id.debugText);
+				tv.append("dumping "+c.getCount()+" rows:\n");
+				while(!c.isAfterLast()){
+					for (int i = 0; i < c.getColumnCount(); i++){
+						tv.append(c.getString(i)+"\t");
+					}
+					tv.append("\n");
+					c.moveToNext();
+				}
+			}
+		});
 		
     }
     
@@ -72,10 +92,12 @@ public class L_Trax extends Activity implements ServiceConnection {
 
 	public void onServiceConnected(ComponentName name, IBinder service) {
 		trackerService = ((TrackerService.LocalBinder)service).getService();
+		trackerService.startRecording();
 		
 	}
 
 	public void onServiceDisconnected(ComponentName name) {
+		trackerService.stopRecording();
 		trackerService = null;
 		
 	}
