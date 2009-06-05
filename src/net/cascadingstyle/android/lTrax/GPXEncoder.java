@@ -1,7 +1,6 @@
 package net.cascadingstyle.android.lTrax;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
@@ -9,23 +8,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.FactoryConfigurationError;
-import javax.xml.parsers.ParserConfigurationException;
-
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-import org.xml.sax.SAXException;
-import org.xmlpull.v1.XmlSerializer;
-
-import android.sax.Element;
-import android.util.Log;
+import android.database.Cursor;
 
 public class GPXEncoder {
-	private String creator;
-	private Map<String, String> rootAttrs = new HashMap<String, String>();
-	private List<List<String>>body = new ArrayList<List<String>>();
+	private Map<String, String> rootAttrs;
+	private List<List<String>>body;
 	private final String template;
 	
 	public GPXEncoder(InputStream blankTemplate) {
@@ -41,6 +28,7 @@ public class GPXEncoder {
     	}
     	this.template = template.toString();
 		
+    	clear();
 	}
 	
 	public void setCreator(String creator){
@@ -50,6 +38,11 @@ public class GPXEncoder {
 		
 		
 		
+	}
+	
+	public void clear(){
+		body = new ArrayList<List<String>>();
+		rootAttrs  = new HashMap<String, String>();
 	}
 	public int addTrack(String name){
 		List<String> track = new ArrayList<String>();
@@ -69,15 +62,43 @@ public class GPXEncoder {
 			rootAttrText.append(k+"='"+rootAttrs.get(k)+"' ");
 		}
 		for (List<String> el: body){
-			String e = el.remove(0);
-			String name = el.remove(0);
+			String e = el.get(0);
+			String name = el.get(1);
 			bodyBuilder.append("<"+e+">");
 			bodyBuilder.append("<name>"+name+"</name>");
-			for (String item: el){
-				bodyBuilder.append(item);
+			
+			for (int i = 2; i < el.size(); i++ ){
+				bodyBuilder.append(el.get(i));
 			}
 			bodyBuilder.append("</"+e+">");
 		}
 		return String.format(this.template, rootAttrText.toString(), "", bodyBuilder.toString());
+	}
+	
+	public String dbToGpx(LocationDbAdapter db){
+		clear();
+		Cursor tracks = db.getAllTracks();
+		int trkIdCol = tracks.getColumnIndex("id");
+		int nameCol = tracks.getColumnIndex("title");
+		
+		tracks.moveToFirst();
+		while(!tracks.isAfterLast()){
+			Cursor c = db.getAllTrackPoints(tracks.getLong(trkIdCol));
+			
+			int trkId = addTrack(tracks.getString(nameCol));
+			int latIdx = c.getColumnIndex("lat");
+			int lonIdx = c.getColumnIndex("lon");
+			
+			c.moveToFirst();
+			while(!c.isAfterLast()){
+				addTrackPoint(trkId, c.getFloat(latIdx), c.getFloat(lonIdx));
+				c.moveToNext();
+			}
+			c.close();
+			tracks.moveToNext();
+		}
+		tracks.close();
+		return getXML();
+		
 	}
 }

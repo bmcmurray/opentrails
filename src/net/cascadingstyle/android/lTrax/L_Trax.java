@@ -1,20 +1,18 @@
 package net.cascadingstyle.android.lTrax;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
-
-import javax.xml.parsers.FactoryConfigurationError;
-import javax.xml.parsers.ParserConfigurationException;
-
-import org.xml.sax.SAXException;
 
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.content.res.Resources.NotFoundException;
-import android.database.Cursor;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.IBinder;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -22,7 +20,7 @@ import android.widget.TextView;
 
 public class L_Trax extends Activity implements ServiceConnection {
 	private static final String TAG = "LTraxMain";
-	private LocationDbAdapter mDbHelper;
+	private LocationDbAdapter db;
 	private TrackerService trackerService;
 	private boolean isBound = false;
 	
@@ -33,8 +31,8 @@ public class L_Trax extends Activity implements ServiceConnection {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
-        mDbHelper = new LocationDbAdapter(this);
-        mDbHelper.open();
+        db = new LocationDbAdapter(this);
+        db.open();
         initButtons();
         
         try {
@@ -74,31 +72,35 @@ public class L_Trax extends Activity implements ServiceConnection {
 		setOnClickListener(new OnClickListener(){
 			public void onClick(View v) {
 				TextView tv = (TextView)findViewById(R.id.debugText);
-				Cursor tracks = trackerService.db.getAllTracks();
-				int trkIdCol = tracks.getColumnIndex("id");
-				int nameCol = tracks.getColumnIndex("title");
 				
-				tracks.moveToFirst();
-				while(!tracks.isAfterLast()){
-					Cursor c = trackerService.db.getAllTrackPoints(tracks.getLong(trkIdCol));
-					
-					int trkId = gpxEncoder.addTrack(tracks.getString(nameCol));
-					int latIdx = c.getColumnIndex("lat");
-					int lonIdx = c.getColumnIndex("lon");
-					
-					c.moveToFirst();
-					while(!c.isAfterLast()){
-						gpxEncoder.addTrackPoint(trkId, c.getFloat(latIdx), c.getFloat(lonIdx));
-						c.moveToNext();
-					}
-					c.close();
-					tracks.moveToNext();
-				}
-				tracks.close();
-				tv.append(gpxEncoder.getXML());
+				tv.setText(gpxEncoder.dbToGpx(db));
+				
 			}
 		});
-		
+	
+		((Button)findViewById(R.id.button_export_log)).
+		setOnClickListener(new OnClickListener(){
+			public void onClick(View v) {
+				writeGpxToSD("openTrails.gpx");
+				
+			}
+		});
+
+    }
+    
+    public void writeGpxToSD(String filename){
+    	try {
+    	    File root = Environment.getExternalStorageDirectory();
+    	    if (root.canWrite()){
+    	        File gpxfile = new File(root, filename);
+    	        FileWriter gpxwriter = new FileWriter(gpxfile);
+    	        BufferedWriter out = new BufferedWriter(gpxwriter);
+    	        out.write(gpxEncoder.dbToGpx(db));
+    	        out.close();
+    	    }
+    	} catch (IOException e) {
+    	    Log.e(TAG, "Could not write file", e);
+    	}
     }
     
     public void bindService(){

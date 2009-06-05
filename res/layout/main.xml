@@ -12,6 +12,7 @@ android:orientation="horizontal"
 android:layout_height="wrap_content">
 	<Button android:text="Start Logging" android:id="@+id/button_start" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
 	<Button android:text="Stop Logging" android:id="@+id/button_stop" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+<Button android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Export Log" android:id="@+id/button_export_log"></Button>
 </LinearLayout>
 
 <Button android:text="Star Waypoint" android:id="@+id/button_favorite" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
