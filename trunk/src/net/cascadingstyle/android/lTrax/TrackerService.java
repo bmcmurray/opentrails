@@ -26,10 +26,86 @@ import android.widget.Toast;
  */
 public class TrackerService extends Service {
 	private LocationManager lm;
+	private LocationDbAdapter db;
+	
 	private NotificationManager nm;
 	private static final int TRACKING_NOTIFICATION = 0x00;
+	private Notification notification;
 
 	private final IBinder mBinder = new LocalBinder();
+
+	@Override
+	public void onCreate() {
+		super.onCreate();
+		
+		db = new LocationDbAdapter(getApplication().getApplicationContext());
+		nm = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
+    	lm = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
+    	
+    	db.open();
+    	
+    	List<String> providers = lm.getAllProviders();
+		Toast.makeText(getApplicationContext(), 
+				providers.toString(), 
+				Toast.LENGTH_LONG).show();
+		showNotification();
+	}
+	
+	public void onDestroy() {
+		nm.cancel(TRACKING_NOTIFICATION);
+		db.close();
+	}
+
+	
+	@Override
+	public IBinder onBind(Intent arg0) {
+		return mBinder;
+	}
+	
+	/********************** public methods ***********************/
+	
+	public void saveWaypoint(){
+		String providerString = lm.getBestProvider(new Criteria(), true);
+    	if (providerString == null){
+    		Toast.makeText(getApplicationContext(), 
+    				getString(R.string.error_no_providers), 
+    				Toast.LENGTH_LONG).show();
+    	}
+
+    	LocationProvider provider = lm.getProvider(providerString);
+    	
+    	Location l = lm.getLastKnownLocation(providerString);
+    	if (l != null){
+    		if (db.createWaypoint(l) > -1){
+    			setNotificationStatus("Now have "+db.getAllWaypoints().getCount() + " waypoints.");
+    		}
+    		Toast.makeText(getApplicationContext(), 
+					getString(R.string.favorite_result) + ": " + l.toString(), 
+					Toast.LENGTH_SHORT).show();
+    	}else{
+    		Toast.makeText(getApplicationContext(), 
+    				getString(R.string.error_no_fix), 
+    				Toast.LENGTH_LONG).show();
+    	}
+	}
+	
+	public void showNotification(){
+		CharSequence text = getText(R.string.tracking_started);
+		notification = new Notification(R.drawable.icon, text, System.currentTimeMillis());
+		
+		setNotificationStatus(text);
+		
+		nm.notify(TRACKING_NOTIFICATION, notification);
+	}
+	
+	public void setNotificationStatus(CharSequence text){
+		// intent that gets triggered upon activation
+		PendingIntent contentIntent = PendingIntent.getActivity(this, 0, 
+				new Intent(this, L_Trax.class), 0);
+		notification.setLatestEventInfo(this, getText(R.string.service_label), text, contentIntent);
+	}
+	
+	/********************* inner classes ************************/
 	
 	public class LocalBinder extends Binder {
 		TrackerService getService(){
@@ -52,64 +128,5 @@ public class TrackerService extends Service {
                 }
             }
 		}
-	}
-	
-	@Override
-	public IBinder onBind(Intent arg0) {
-		return mBinder;
-	}
-	
-	
-
-	@Override
-	public void onCreate() {
-		super.onCreate();
-		
-		nm = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
-    	lm = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
-    	
-    	List<String> providers = lm.getAllProviders();
-		Toast.makeText(getApplicationContext(), 
-				providers.toString(), 
-				Toast.LENGTH_LONG).show();
-		showNotification();
-	}
-	
-	public void onDestroy() {
-		nm.cancel(TRACKING_NOTIFICATION);
-	}
-	
-	public void saveWaypoint(){
-		String providerString = lm.getBestProvider(new Criteria(), true);
-    	if (providerString == null){
-    		Toast.makeText(getApplicationContext(), 
-    				getString(R.string.error_no_providers), 
-    				Toast.LENGTH_LONG).show();
-    	}
-
-    	LocationProvider provider = lm.getProvider(providerString);
-    	
-    	Location l = lm.getLastKnownLocation(providerString);
-    	if (l != null){
-		Toast.makeText(getApplicationContext(), 
-				getString(R.string.favorite_result) + ": " + l.toString(), 
-				Toast.LENGTH_SHORT).show();
-    	}else{
-    		Toast.makeText(getApplicationContext(), 
-    				getString(R.string.error_no_fix), 
-    				Toast.LENGTH_LONG).show();
-    	}
-	}
-	
-	public void showNotification(){
-		CharSequence text = getText(R.string.tracking_started);
-		Notification notification = new Notification(R.drawable.icon, text, System.currentTimeMillis());
-		
-		// intent that gets triggered upon activation
-		PendingIntent contentIntent = PendingIntent.getActivity(this, 0, 
-				new Intent(this, L_Trax.class), 0);
-		notification.setLatestEventInfo(this, getText(R.string.service_label), text, contentIntent);
-		
-		nm.notify(TRACKING_NOTIFICATION, notification);
 	}
 }
