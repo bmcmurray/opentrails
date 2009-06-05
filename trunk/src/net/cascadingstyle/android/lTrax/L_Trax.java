@@ -1,9 +1,17 @@
 package net.cascadingstyle.android.lTrax;
 
+import java.io.IOException;
+
+import javax.xml.parsers.FactoryConfigurationError;
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.xml.sax.SAXException;
+
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.res.Resources.NotFoundException;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -18,6 +26,8 @@ public class L_Trax extends Activity implements ServiceConnection {
 	private TrackerService trackerService;
 	private boolean isBound = false;
 	
+	private GPXEncoder gpxEncoder;
+	
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -27,8 +37,13 @@ public class L_Trax extends Activity implements ServiceConnection {
         mDbHelper.open();
         initButtons();
         
-        
-        
+        try {
+			gpxEncoder = new GPXEncoder(getResources().openRawResource(R.raw.gpxtemplate));
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+       
     }
     
     private void initButtons(){
@@ -58,16 +73,29 @@ public class L_Trax extends Activity implements ServiceConnection {
 		((Button)findViewById(R.id.button_showDb)).
 		setOnClickListener(new OnClickListener(){
 			public void onClick(View v) {
-				Cursor c = trackerService.db.getAllWaypoints();
 				TextView tv = (TextView)findViewById(R.id.debugText);
-				tv.append("dumping "+c.getCount()+" rows:\n");
-				while(!c.isAfterLast()){
-					for (int i = 0; i < c.getColumnCount(); i++){
-						tv.append(c.getString(i)+"\t");
+				Cursor tracks = trackerService.db.getAllTracks();
+				int trkIdCol = tracks.getColumnIndex("id");
+				int nameCol = tracks.getColumnIndex("title");
+				
+				tracks.moveToFirst();
+				while(!tracks.isAfterLast()){
+					Cursor c = trackerService.db.getAllTrackPoints(tracks.getLong(trkIdCol));
+					
+					int trkId = gpxEncoder.addTrack(tracks.getString(nameCol));
+					int latIdx = c.getColumnIndex("lat");
+					int lonIdx = c.getColumnIndex("lon");
+					
+					c.moveToFirst();
+					while(!c.isAfterLast()){
+						gpxEncoder.addTrackPoint(trkId, c.getFloat(latIdx), c.getFloat(lonIdx));
+						c.moveToNext();
 					}
-					tv.append("\n");
-					c.moveToNext();
+					c.close();
+					tracks.moveToNext();
 				}
+				tracks.close();
+				tv.append(gpxEncoder.getXML());
 			}
 		});
 		
