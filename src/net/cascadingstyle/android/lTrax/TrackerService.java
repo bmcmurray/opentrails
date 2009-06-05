@@ -12,7 +12,6 @@ import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
-import android.location.LocationProvider;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.Handler;
@@ -35,6 +34,9 @@ public class TrackerService extends Service implements LocationListener {
 	private Notification notification;
 
 	private final IBinder mBinder = new LocalBinder();
+	
+	private long currentTrack = -1;
+	private String currentTrackName;
 
 	@Override
 	public void onCreate() {
@@ -66,13 +68,19 @@ public class TrackerService extends Service implements LocationListener {
 	
 	/********************** public methods ***********************/
 	
-	public void startRecording(){
-		lm.requestLocationUpdates("gps", 60000, 1, this);
-		
+
+	
+	public void startRecordingTrack(String title){
+		currentTrackName = title;
+		startRecording();
 	}
 	
-	public void stopRecording(){
-		lm.removeUpdates(this);
+	public void startRecordingTrack(){
+		startRecordingTrack(null);
+	}
+	
+	public void stopRecordingTrack(){
+		stopRecording();
 	}
 	
 	public void showRecorded(){
@@ -89,15 +97,14 @@ public class TrackerService extends Service implements LocationListener {
     				Toast.LENGTH_LONG).show();
     	}
 
-    	LocationProvider provider = lm.getProvider(providerString);
     	
-    	Location l = lm.getLastKnownLocation(providerString);
-    	if (l != null){
-    		if (db.createWaypoint(l) > -1){
+    	Location loc = lm.getLastKnownLocation(providerString);
+    	if (loc != null){
+    		if (db.createWaypoint(loc) > -1){
     			setNotificationStatus("Now have "+db.getAllWaypoints().getCount() + " waypoints.");
     		}
     		Toast.makeText(getApplicationContext(), 
-					getString(R.string.favorite_result) + ": " + l.toString(), 
+					getString(R.string.favorite_result) + ": " + loc.toString(), 
 					Toast.LENGTH_SHORT).show();
     	}else{
     		Toast.makeText(getApplicationContext(), 
@@ -120,6 +127,42 @@ public class TrackerService extends Service implements LocationListener {
 		PendingIntent contentIntent = PendingIntent.getActivity(this, 0, 
 				new Intent(this, L_Trax.class), 0);
 		notification.setLatestEventInfo(this, getText(R.string.service_label), text, contentIntent);
+	}
+	
+	private void startRecording(){
+		lm.requestLocationUpdates("gps", 60000, 1, this);
+		
+	}
+	
+	private void stopRecording(){
+		lm.removeUpdates(this);
+	}
+	
+	public void onLocationChanged(Location loc) {
+		if (currentTrack == -1){
+			if (currentTrackName != null){
+				currentTrack = db.createTrack(loc, currentTrackName);
+			}else{
+				currentTrack = db.createTrack(loc);
+			}
+		}else{
+			db.createTrackPoint(currentTrack, loc);
+		}
+	}
+
+	public void onProviderDisabled(String provider) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void onProviderEnabled(String provider) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void onStatusChanged(String provider, int status, Bundle extras) {
+		// TODO Auto-generated method stub
+		
 	}
 	
 	/********************* inner classes ************************/
@@ -145,35 +188,5 @@ public class TrackerService extends Service implements LocationListener {
                 }
             }
 		}
-	}
-
-	public void onLocationChanged(Location loc) {
-		if (db.createWaypoint(loc) > -1){
-			setNotificationStatus("Now have "+db.getAllWaypoints().getCount() + " waypoints.");
-			Toast.makeText(getApplicationContext(), 
-					getString(R.string.favorite_result) + ": " + loc.getLatitude() + ", "+loc.getLongitude(), 
-					Toast.LENGTH_SHORT).show();
-
-		}
-		/*
-		Toast.makeText(getApplicationContext(), 
-				getString(R.string.favorite_result) + ": " + loc.toString(), 
-				Toast.LENGTH_SHORT).show();
-		*/
-	}
-
-	public void onProviderDisabled(String provider) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public void onProviderEnabled(String provider) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public void onStatusChanged(String provider, int status, Bundle extras) {
-		// TODO Auto-generated method stub
-		
 	}
 }

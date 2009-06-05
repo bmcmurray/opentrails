@@ -92,12 +92,12 @@ public class L_Trax extends Activity implements ServiceConnection {
 
 	public void onServiceConnected(ComponentName name, IBinder service) {
 		trackerService = ((TrackerService.LocalBinder)service).getService();
-		trackerService.startRecording();
+		trackerService.startRecordingTrack();
 		
 	}
 
 	public void onServiceDisconnected(ComponentName name) {
-		trackerService.stopRecording();
+		trackerService.stopRecordingTrack();
 		trackerService = null;
 		
 	}
