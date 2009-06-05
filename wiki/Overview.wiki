@@ -1,9 +1,9 @@
-#summary Feature overview of lTrax software.
+#summary Feature overview of openTrails.
 #labels Phase-Requirements
 
 = Introduction =
 
-lTrax is open source GPS tracking for Android 1.5. It enables the user to save a waypoint or a gps track easily and export that data as a flatfile for later use. It is able to do this without a data connection or SIM card, using just the built-in GPS radio.
+openTrails is open source GPS tracking for Android 1.5. It enables the user to save a waypoint or a gps track easily and export that data as a flatfile for later use. It is able to do this without a data connection or SIM card, using just the built-in GPS radio.
 
 = Features =
 
@@ -13,7 +13,7 @@ lTrax is open source GPS tracking for Android 1.5. It enables the user to save a
   * Simple Widget to record waypoint with one tap
 
 = Why =
-lTrax was envisioned to allow a roaming photographer to create a timecoded GPS track while out taking photos and export the track into a file useful for later geo-coding the photos. There is a wide variety of desktop software for taking a file of GPS coordinates and matching timestamps with the EXIF data of a photo to geo-code.
+openTrails was envisioned to allow a roaming photographer to create a timecoded GPS track while out taking photos and export the track into a file useful for later geo-coding the photos. There is a wide variety of desktop software for taking a file of GPS coordinates and matching timestamps with the EXIF data of a photo to geo-code.
 
 Similar software exists (see below) but is not open source, nor did it feature easy-access homescreen widgets for the main features of the software.
 
