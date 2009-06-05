@@ -82,7 +82,10 @@ public class LocationDbAdapter {
 
         @Override
         public void onCreate(SQLiteDatabase db) {
-            db.execSQL(DATABASE_CREATE);
+        	// XXX this isn't entirely sane, as it doesn't pay attention to context.
+        	for (String stmt : DATABASE_CREATE.split(";")){ 
+        		db.execSQL(stmt);
+        	}
         }
 
         @Override
