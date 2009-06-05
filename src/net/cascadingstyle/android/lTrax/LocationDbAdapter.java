@@ -283,6 +283,15 @@ public class LocationDbAdapter {
     	
     }
     
+    public Cursor getAllTrackPoints(long trackId) {
+    	return mDb.query(
+    			true,
+    			"TrackPoint", 
+    			new String[] {"id", "lon", "lat", "timestamp"}, 
+    			"tid=?", new String[] {Long.toString(trackId)},
+    			null, null, null, null);
+    }
+    
     /**
      * Return a Cursor over the list of all waypoints in the database
      * 
