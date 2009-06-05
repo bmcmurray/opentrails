@@ -1,7 +1,7 @@
 = Authors =
 
 == Brian McMurray ==
-Brian McMurray is a web and mobile developer based in Cambridge, MA. He blogs at www.cascadingstyle.net. He loves his Android Dev 1 and his Nikon D90.
+Brian McMurray is a web and mobile developer in Cambridge, MA. He blogs at www.cascadingstyle.net. He loves his Android Dev 1 and his Nikon D90.
 
 == Steve Pomeroy ==
 

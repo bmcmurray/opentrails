@@ -3,7 +3,7 @@
 
 = Introduction =
 
-openTrails is open source GPS tracking for Android 1.5. It enables the user to save a waypoint or a gps track easily and export that data as a flatfile for later use. It is able to do this without a data connection or SIM card, using just the built-in GPS radio.
+openTrails is open source GPS tracking for Android 1.5. It enables the user to save a waypoint or a gps track easily and export that data as a flat-file for later use. It is able to do this without a data connection or SIM card, using just the built-in GPS radio.
 
 = Features =
 
