@@ -1,0 +1,18 @@
+# Introduction #
+
+openTrails is open source GPS tracking for Android 1.5. It enables the user to save a waypoint or a gps track easily and export that data as a flat-file for later use. It is able to do this without a data connection or SIM card, using just the built-in GPS radio.
+
+# Features #
+
+  * GPS Tracking without SIM card or data connection
+  * Flat-file export of GPS Tracks
+  * Simple Widget to start/stop tracking
+  * Simple Widget to record waypoint with one tap
+
+# Why #
+openTrails was envisioned to allow a roaming photographer to create a timecoded GPS track while out taking photos and export the track into a file useful for later geo-coding the photos. There is a wide variety of desktop software for taking a file of GPS coordinates and matching timestamps with the EXIF data of a photo to geo-code.
+
+Similar software exists (see below) but is not open source, nor did it feature easy-access homescreen widgets for the main features of the software.
+
+# See also #
+  * My Tracks: http://mytracks.appspot.com/

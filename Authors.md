@@ -1,0 +1,8 @@
+# Authors #
+
+## Brian McMurray ##
+Brian McMurray is a web and mobile developer in Cambridge, MA. He blogs at www.cascadingstyle.net. He loves his Android Dev 1 and his Nikon D90.
+
+## Steve Pomeroy ##
+
+Steve Pomeroy is a web, mobile, and device hacker in Somerville, MA. He loves open source technologies, his T-Mobile G1, and his Nikon D80.

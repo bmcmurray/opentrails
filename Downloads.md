@@ -1,0 +1,1 @@
+openTrails does not yet have a stable release. When one is available, a link to the Android Market will be here to direct your download.
